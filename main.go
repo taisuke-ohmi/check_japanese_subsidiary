@@ -29,17 +29,25 @@ func main() {
 		defer fp.Close()
 	}
 
+	sem := make(chan struct{}, 2)
+
 	scanner := bufio.NewScanner(fp)
 	for scanner.Scan() {
-		corp := scanner.Text()
-		if checkJapaneseSubsidiary(corp) {
-			fmt.Printf("%q,1\n", corp)
-		} else {
-			fmt.Printf("%q,0\n", corp)
-		}
+		sem <- struct{}{}
+		go func(corp string, sem chan struct{}) {
+			if checkJapaneseSubsidiary(corp) {
+				fmt.Printf("%q,1\n", corp)
+			} else {
+				fmt.Printf("%q,0\n", corp)
+			}
+			<-sem
+		}(scanner.Text(), sem)
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
+	}
+
+	for len(sem) > 0 {
 	}
 }
 
@@ -48,24 +56,28 @@ func checkJapaneseSubsidiary(corp string) bool {
 	// Request the HTML page.
 	res, err := http.Get(fmt.Sprintf("https://www.google.co.jp/search?q=%s", str))
 	if err != nil {
-		log.Fatalf("failed to http get. %v", err)
+		log.Printf("failed to http get. err:%v, corp:%q\n", err, corp)
+		return false
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
-		log.Fatalf("status code error: %d %s", res.StatusCode, res.Status)
+		log.Printf("status code error: %d %s corp:%q\n", res.StatusCode, res.Status, corp)
+		return false
 	}
 
 	// convert to utf8
 	utfBody, err := iconv.NewReader(res.Body, "shift_jis", "utf-8")
 	if err != nil {
-		log.Fatalf("failed to decode: %v", err)
+		log.Printf("failed to decode: err:%v, corp:%q", err, corp)
+		return false
 	}
 
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(utfBody)
 	if err != nil {
-		log.Fatalf("failed to load html. %v", err)
+		log.Printf("failed to load html. err:%v, corp:%q", err, corp)
+		return false
 	}
 
 	var isJapaneseSite bool
