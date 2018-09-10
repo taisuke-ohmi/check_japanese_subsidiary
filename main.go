@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"unicode/utf8"
 
@@ -15,9 +17,29 @@ import (
 const GOOGLEPLAY = `https://play.google.com/store/apps/details`
 
 func main() {
-	corp := "Jam City, Inc."
-	if checkJapaneseSubsidiary(corp) {
-		fmt.Println(corp)
+	var fp *os.File
+	var err error
+	if len(os.Args) < 2 {
+		log.Fatal("filename is require")
+	} else {
+		fp, err = os.Open(os.Args[1])
+		if err != nil {
+			panic(err)
+		}
+		defer fp.Close()
+	}
+
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		corp := scanner.Text()
+		if checkJapaneseSubsidiary(corp) {
+			fmt.Printf("%q,1\n", corp)
+		} else {
+			fmt.Printf("%q,0\n", corp)
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		panic(err)
 	}
 }
 
