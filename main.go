@@ -84,21 +84,17 @@ func checkJapaneseSubsidiary(corp string, logger *log.Logger) bool {
 	}
 
 	var isJapaneseSite bool
-	var isBlackList bool
 	rg := regexp.MustCompile(GOOGLEPLAY)
 	ri := regexp.MustCompile(ITUNES)
 	doc.Find(".g").Each(func(i int, s *goquery.Selection) {
-		if i > 2 || isBlackList || isJapaneseSite {
+		if i > 2 || isJapaneseSite {
 			return
 		}
 
 		// whether or not first result url match google play or itunes.
-		if i == 0 {
-			url := s.Find("cite").Text()
-			if rg.MatchString(url) || ri.MatchString(url) {
-				isBlackList = true
-				return
-			}
+		url := s.Find("cite").Text()
+		if rg.MatchString(url) || ri.MatchString(url) {
+			return
 		}
 
 		// whether or not title is alphabet
