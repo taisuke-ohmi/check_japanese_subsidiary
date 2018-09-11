@@ -12,10 +12,11 @@ import (
 	"unicode/utf8"
 
 	"github.com/PuerkitoBio/goquery"
-	iconv "github.com/djimenez/iconv-go"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
-const GOOGLEPLAY = `https://play.google.com/store/apps/details`
+const GOOGLEPLAY = `https://play.google.com/store/apps`
 
 func main() {
 	var fp *os.File
@@ -50,7 +51,7 @@ func main() {
 	}
 
 	for len(sem) > 0 {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 	}
 }
 
@@ -69,12 +70,7 @@ func checkJapaneseSubsidiary(corp string, logger *log.Logger) bool {
 		return false
 	}
 
-	// convert to utf8
-	utfBody, err := iconv.NewReader(res.Body, "shift_jis", "utf-8")
-	if err != nil {
-		logger.Print(fmt.Sprintf("failed to decode: err:%v, corp:%q\n", err, corp))
-		return false
-	}
+	utfBody := transform.NewReader(bufio.NewReader(res.Body), japanese.ShiftJIS.NewDecoder())
 
 	// Load the HTML document
 	doc, err := goquery.NewDocumentFromReader(utfBody)
