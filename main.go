@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -35,6 +36,7 @@ func main() {
 	logger := log.New(os.Stderr, "ERROR: ", log.LstdFlags)
 
 	scanner := bufio.NewScanner(fp)
+	rand.Seed(time.Now().UnixNano())
 	for scanner.Scan() {
 		sem <- struct{}{}
 		go func(corp string, sem chan struct{}, logger *log.Logger) {
@@ -45,13 +47,14 @@ func main() {
 			}
 			<-sem
 		}(scanner.Text(), sem, logger)
+		time.Sleep(time.Duration(rand.Intn(3)+1) * 1000 * time.Millisecond)
 	}
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
 	for len(sem) > 0 {
-		time.Sleep(1000 * time.Millisecond)
+		time.Sleep(5000 * time.Millisecond)
 	}
 }
 
