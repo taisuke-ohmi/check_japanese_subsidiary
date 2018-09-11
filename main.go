@@ -17,7 +17,8 @@ import (
 	"golang.org/x/text/transform"
 )
 
-const GOOGLEPLAY = `https://play.google.com/store/apps`
+const GOOGLEPLAY = `https://play.google.com/store`
+const ITUNES = `https://itunes.apple.com/jp/app`
 
 func main() {
 	var fp *os.File
@@ -83,18 +84,21 @@ func checkJapaneseSubsidiary(corp string, logger *log.Logger) bool {
 	}
 
 	var isJapaneseSite bool
-	var isGplaySite bool
-	r := regexp.MustCompile(GOOGLEPLAY)
+	var isBlackList bool
+	rg := regexp.MustCompile(GOOGLEPLAY)
+	ri := regexp.MustCompile(ITUNES)
 	doc.Find(".g").Each(func(i int, s *goquery.Selection) {
-		if i > 2 || isGplaySite || isJapaneseSite {
+		if i > 2 || isBlackList || isJapaneseSite {
 			return
 		}
 
-		// whether or not first result url match https://play.google.com/store/apps/details
-		url := s.Find("cite").Text()
-		if r.MatchString(url) {
-			isGplaySite = true
-			return
+		// whether or not first result url match google play or itunes.
+		if i == 0 {
+			url := s.Find("cite").Text()
+			if rg.MatchString(url) || ri.MatchString(url) {
+				isBlackList = true
+				return
+			}
 		}
 
 		// whether or not title is alphabet
