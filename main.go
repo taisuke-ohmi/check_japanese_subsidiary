@@ -17,8 +17,8 @@ import (
 	"golang.org/x/text/transform"
 )
 
-const GOOGLEPLAY = `https://play.google.com/store`
-const ITUNES = `https://itunes.apple.com/jp`
+const GOOGLEPLAY = `https://play.google.com`
+const ITUNES = `https://itunes.apple.com`
 
 func main() {
 	var fp *os.File
