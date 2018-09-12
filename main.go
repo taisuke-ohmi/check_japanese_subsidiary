@@ -62,7 +62,7 @@ func main() {
 func checkJapaneseSubsidiary(corp string, logger *log.Logger) bool {
 	str := url.QueryEscape(corp)
 	// Request the HTML page.
-	res, err := http.Get(fmt.Sprintf("https://www.google.co.jp/search?q=%s", str))
+	res, err := http.Get(fmt.Sprintf("https://www.google.co.jp/search?hl=jp&gl=jp&q=%s", str))
 	if err != nil {
 		logger.Print(fmt.Sprintf("failed to http get. err:%v, corp:%q\n", err, corp))
 		return false
