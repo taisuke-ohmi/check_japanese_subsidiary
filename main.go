@@ -18,7 +18,7 @@ import (
 )
 
 const GOOGLEPLAY = `https://play.google.com/store`
-const ITUNES = `https://itunes.apple.com/jp/app`
+const ITUNES = `https://itunes.apple.com/jp`
 
 func main() {
 	var fp *os.File
